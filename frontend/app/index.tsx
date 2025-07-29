@@ -227,7 +227,7 @@ const VoiceAI: React.FC = () => {
 
       formData.append('history', JSON.stringify(conversationHistory.slice(-6)));
 
-      const response = await fetch(`${getBackendUrl()}/voice/process`, {
+      const response = await fetch('https://wittify-dev-production.up.railway.app/voice/process', {
         method: 'POST',
         body: formData,
         headers: {
