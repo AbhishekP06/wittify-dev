@@ -3,7 +3,7 @@ const axios = require('axios');
 async function streamTTS(text) {
   try {
     const response = await axios.post(
-      `https://api.elevenlabs.io/v1/text-to-speech/${process.env.ELEVENLABS_VOICE_ID}/stream`,
+      `https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM/stream`,
       {
         text: text,
         model_id: 'eleven_turbo_v2',
@@ -19,6 +19,7 @@ async function streamTTS(text) {
           'Accept': 'audio/mpeg',
           'xi-api-key': process.env.ELEVENLABS_API_KEY,
           'Content-Type': 'application/json',
+          'User-Agent': 'Wittify-VoiceAI/1.0',
         },
         responseType: 'arraybuffer'
       }
@@ -26,7 +27,9 @@ async function streamTTS(text) {
 
     return Buffer.from(response.data);
   } catch (error) {
-    console.error('ElevenLabs TTS error:', error);
+    console.error('ElevenLabs TTS error:', error.response?.data || error.message);
+    console.error('ElevenLabs API Key used:', process.env.ELEVENLABS_API_KEY ? 'Present' : 'Missing');
+    console.error('ElevenLabs API Key length:', process.env.ELEVENLABS_API_KEY?.length || 0);
     
     try {
       const OpenAI = require('openai');

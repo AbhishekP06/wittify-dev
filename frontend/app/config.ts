@@ -1,10 +1,10 @@
 // Configuration for different environments
 export const CONFIG = {
   development: {
-    backendUrl: 'http://192.168.1.12:8000', // Local development
+    backendUrl: 'http://192.168.1.2:8000', // Local development
   },
   production: {
-    backendUrl: 'https://wittify-dev-backend.onrender.com', 
+    backendUrl: 'https://wittify-dev-backend.onrender.com',
   },
   staging: {
     backendUrl: 'https://your-staging-url.render.com', // Replace with your staging URL
