@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView } from 'react-native';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
+import { getBackendUrl } from './config';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -226,7 +227,7 @@ const VoiceAI: React.FC = () => {
 
       formData.append('history', JSON.stringify(conversationHistory.slice(-6)));
 
-      const response = await fetch('http://192.168.1.12:8000/voice/process', {
+      const response = await fetch(`${getBackendUrl()}/voice/process`, {
         method: 'POST',
         body: formData,
         headers: {
