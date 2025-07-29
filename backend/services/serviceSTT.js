@@ -16,7 +16,7 @@ async function streamSTT(audioInput) {
       method: 'post',
       url: 'https://api.assemblyai.com/v2/upload',
       headers: {
-        'Authorization': ASSEMBLYAI_API_KEY,
+        'Authorization': `Bearer ${ASSEMBLYAI_API_KEY}`,
         'transfer-encoding': 'chunked',
       },
       data: audioBuffer,
@@ -30,7 +30,7 @@ async function streamSTT(audioInput) {
       method: 'post',
       url: 'https://api.assemblyai.com/v2/transcript',
       headers: {
-        'Authorization': ASSEMBLYAI_API_KEY,
+        'Authorization': `Bearer ${ASSEMBLYAI_API_KEY}`,
         'Content-type': 'application/json',
       },
       data: {
@@ -49,7 +49,7 @@ async function streamSTT(audioInput) {
       const pollingRes = await axios({
         method: 'get',
         url: `https://api.assemblyai.com/v2/transcript/${transcriptId}`,
-        headers: { 'Authorization': ASSEMBLYAI_API_KEY },
+        headers: { 'Authorization': `Bearer ${ASSEMBLYAI_API_KEY}` },
       });
       if (pollingRes.data.status === 'completed') {
         completed = true;
