@@ -4,7 +4,7 @@ export const CONFIG = {
     backendUrl: 'http://192.168.1.2:8000', // Local development
   },
   production: {
-    backendUrl: 'https://wittify-dev-backend.onrender.com',
+    backendUrl: 'https://wittify-dev-production.up.railway.app', 
   },
   staging: {
     backendUrl: 'https://your-staging-url.render.com', // Replace with your staging URL

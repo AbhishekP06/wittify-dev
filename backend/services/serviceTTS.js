@@ -3,7 +3,7 @@ const axios = require('axios');
 async function streamTTS(text) {
   try {
     const response = await axios.post(
-      `https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM/stream`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${process.env.ELEVENLABS_VOICE_ID}/stream`,
       {
         text: text,
         model_id: 'eleven_turbo_v2',
