@@ -31,7 +31,7 @@ async function streamSTT(audioInput) {
       url: 'https://api.assemblyai.com/v2/transcript',
       headers: {
         'Authorization': ASSEMBLYAI_API_KEY,
-        'content-type': 'application/json',
+        'Content-type': 'application/json',
       },
       data: {
         audio_url,
