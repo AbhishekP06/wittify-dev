@@ -3,7 +3,7 @@ const axios = require('axios');
 async function streamTTS(text) {
   try {
     const response = await axios.post(
-      `https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM/stream`,
+      `https://api.elevenlabs.io/v1/text-to-speech/EXAVITQu4vr4xnSDxMaL/stream`,
       {
         text: text,
         model_id: 'eleven_turbo_v2',
@@ -20,6 +20,10 @@ async function streamTTS(text) {
           'xi-api-key': process.env.ELEVENLABS_API_KEY,
           'Content-Type': 'application/json',
           'User-Agent': 'Wittify-VoiceAI/1.0',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Connection': 'keep-alive',
+          'Cache-Control': 'no-cache',
         },
         responseType: 'arraybuffer'
       }
@@ -32,6 +36,9 @@ async function streamTTS(text) {
     console.error('ElevenLabs API Key length:', process.env.ELEVENLABS_API_KEY?.length || 0);
     
     try {
+      if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your_openai_key_here') {
+        throw new Error('OpenAI API key not configured');
+      }
       const OpenAI = require('openai');
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       
