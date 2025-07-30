@@ -32,7 +32,7 @@ const VoiceAI: React.FC = () => {
   const [transcript, setTranscript] = useState<string>('');
   const [aiResponse, setAiResponse] = useState<string>('');
   const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
-  
+
   const recordingRef = useRef<Audio.Recording | null>(null);
   const soundRef = useRef<Audio.Sound | null>(null);
 
@@ -81,14 +81,14 @@ const VoiceAI: React.FC = () => {
     if (!isConversationActive) return;
     if (isPlaying) return;
     if (isRecording) return;
-    
+
     try {
       const { status } = await Audio.requestPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission denied', 'Audio recording permission is required');
         return;
       }
-      
+
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
@@ -96,11 +96,11 @@ const VoiceAI: React.FC = () => {
         staysActiveInBackground: true,
         shouldDuckAndroid: true,
       });
-      
+
       setIsRecording(true);
       setTranscript('');
       setAiResponse('');
-      
+
       if (recordingRef.current) {
         await recordingRef.current.stopAndUnloadAsync();
       }
@@ -132,20 +132,20 @@ const VoiceAI: React.FC = () => {
 
       const { recording } = await Audio.Recording.createAsync(recordingOptions);
       recordingRef.current = recording;
-      
+
       if (!recording) {
         setIsRecording(false);
         Alert.alert('Error', 'Failed to create recording object');
         return;
       }
-      
+
       const recordingStatus = await recording.getStatusAsync();
       if (!recordingStatus.isRecording) {
         setIsRecording(false);
         Alert.alert('Error', 'Recording failed to start');
         return;
       }
-      
+
       setCountdown(5);
       const countdownTimer = setInterval(() => {
         setCountdown(prev => {
@@ -156,13 +156,13 @@ const VoiceAI: React.FC = () => {
           return prev - 1;
         });
       }, 1000);
-      
+
       const autoStopTimer = setTimeout(async () => {
         if (recordingRef.current && isConversationActive) {
           await stopRecording();
         }
       }, 5000);
-      
+
       if (recordingRef.current) {
         (recordingRef.current as any).autoStopTimer = autoStopTimer;
         (recordingRef.current as any).countdownTimer = countdownTimer;
@@ -170,7 +170,7 @@ const VoiceAI: React.FC = () => {
         clearTimeout(autoStopTimer);
         clearInterval(countdownTimer);
       }
-      
+
     } catch (error) {
       console.error('Failed to start recording:', error);
       setIsRecording(false);
@@ -183,30 +183,30 @@ const VoiceAI: React.FC = () => {
     try {
       setIsRecording(false);
       setIsProcessing(true);
-      
+
       if (!recordingRef.current) {
         setIsProcessing(false);
         return;
       }
-      
+
       if (recordingRef.current && (recordingRef.current as any).autoStopTimer) {
         clearTimeout((recordingRef.current as any).autoStopTimer);
       }
-      
+
       if (recordingRef.current && (recordingRef.current as any).countdownTimer) {
         clearInterval((recordingRef.current as any).countdownTimer);
       }
-      
+
       await recordingRef.current.stopAndUnloadAsync();
       const uri = recordingRef.current.getURI();
       recordingRef.current = null;
-      
+
       if (!uri) {
         throw new Error('Recording URI is null');
       }
-      
+
       await processVoiceInput(uri);
-      
+
     } catch (error) {
       console.error('Failed to stop recording:', error);
       setIsProcessing(false);
@@ -217,7 +217,7 @@ const VoiceAI: React.FC = () => {
   const processVoiceInput = async (audioUri: string): Promise<void> => {
     try {
       setIsProcessing(true);
-      
+
       const formData = new FormData();
       formData.append('audio', {
         uri: audioUri,
@@ -227,7 +227,7 @@ const VoiceAI: React.FC = () => {
 
       formData.append('history', JSON.stringify(conversationHistory.slice(-6)));
 
-      const response = await fetch('https://wittify-dev-backend.onrender.com/voice/process', {
+      const response = await fetch('https://wittify-dev-777785888075.europe-west1.run.app/voice/process', {
         method: 'POST',
         body: formData,
         headers: {
@@ -240,14 +240,14 @@ const VoiceAI: React.FC = () => {
       }
 
       const result: VoiceProcessingResult = await response.json();
-      
+
       if (result.error) {
         throw new Error(result.error);
       }
 
       setTranscript(result.transcript);
       setAiResponse(result.response);
-      
+
       setConversationHistory(prev => [
         ...prev,
         { role: 'user', content: result.transcript },
@@ -255,9 +255,9 @@ const VoiceAI: React.FC = () => {
       ]);
 
       await playAudioFromBase64(result.audio);
-      
+
       setIsReplyCompleted(true);
-      
+
     } catch (error) {
       console.error('Voice processing failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -270,11 +270,11 @@ const VoiceAI: React.FC = () => {
   const playAudioFromBase64 = async (base64Audio: string): Promise<void> => {
     try {
       setIsPlaying(true);
-      
+
       if (soundRef.current) {
         await soundRef.current.unloadAsync();
       }
-      
+
       const audioUri = `${FileSystem.documentDirectory}temp_audio_${Date.now()}.mp3`;
       await FileSystem.writeAsStringAsync(audioUri, base64Audio, {
         encoding: FileSystem.EncodingType.Base64,
@@ -287,15 +287,15 @@ const VoiceAI: React.FC = () => {
         staysActiveInBackground: false,
         shouldDuckAndroid: false,
       });
-      
+
       if (Platform.OS === 'ios') {
         await new Promise(res => setTimeout(res, 200));
       }
 
       const { sound } = await Audio.Sound.createAsync(
         { uri: audioUri },
-        { 
-          shouldPlay: true, 
+        {
+          shouldPlay: true,
           isLooping: false,
           volume: 1.0,
         },
@@ -304,7 +304,7 @@ const VoiceAI: React.FC = () => {
             setIsPlaying(false);
             setIsReplyCompleted(false);
             FileSystem.deleteAsync(audioUri, { idempotent: true }).catch(console.warn);
-            
+
             if (isConversationActive && !isRecording && !isProcessing && !isPlaying) {
               startRecording();
             }
@@ -313,7 +313,7 @@ const VoiceAI: React.FC = () => {
       );
 
       soundRef.current = sound;
-      
+
     } catch (error) {
       console.error('Audio playback failed:', error);
       setIsPlaying(false);
@@ -368,7 +368,7 @@ const VoiceAI: React.FC = () => {
     setIsPlaying(false);
     setIsReplyCompleted(false);
     setCountdown(0);
-    
+
     if (recordingRef.current) {
       if ((recordingRef.current as any).autoStopTimer) {
         clearTimeout((recordingRef.current as any).autoStopTimer);
@@ -379,7 +379,7 @@ const VoiceAI: React.FC = () => {
       recordingRef.current.stopAndUnloadAsync().catch(console.warn);
       recordingRef.current = null;
     }
-    
+
     if (soundRef.current) {
       soundRef.current.unloadAsync().catch(console.warn);
       soundRef.current = null;
@@ -391,27 +391,27 @@ const VoiceAI: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.title}>Voice AI Assistant</Text>
         <Text style={styles.status}>{getStatusText()}</Text>
-        
+
         <View style={styles.buttonContainer}>
           {!isConversationActive ? (
-            <TouchableOpacity 
-              style={styles.startButton} 
+            <TouchableOpacity
+              style={styles.startButton}
               onPress={startConversation}
             >
               <Text style={styles.startButtonText}>Start Conversation</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity 
-              style={styles.stopButton} 
+            <TouchableOpacity
+              style={styles.stopButton}
               onPress={stopConversation}
             >
               <Text style={styles.stopButtonText}>Stop Conversation</Text>
             </TouchableOpacity>
           )}
-          
+
           {conversationHistory.length > 0 && (
-            <TouchableOpacity 
-              style={styles.clearButton} 
+            <TouchableOpacity
+              style={styles.clearButton}
               onPress={clearConversation}
             >
               <Text style={styles.clearButtonText}>Clear Chat</Text>
@@ -420,7 +420,7 @@ const VoiceAI: React.FC = () => {
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.conversationArea}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
@@ -428,8 +428,8 @@ const VoiceAI: React.FC = () => {
         {conversationHistory.length > 0 ? (
           <View style={styles.conversationContainer}>
             {conversationHistory.map((message, index) => (
-              <View 
-                key={index} 
+              <View
+                key={index}
                 style={[
                   styles.messageContainer,
                   message.role === 'user' ? styles.userMessage : styles.aiMessage
@@ -460,7 +460,7 @@ const VoiceAI: React.FC = () => {
         {isConversationActive && (
           <View style={styles.statusIndicator}>
             <View style={[
-              styles.statusDot, 
+              styles.statusDot,
               { backgroundColor: getStatusColor() }
             ]} />
             <Text style={styles.statusIndicatorText}>
@@ -468,9 +468,9 @@ const VoiceAI: React.FC = () => {
             </Text>
           </View>
         )}
-        
+
         {isConversationActive && !isRecording && !isProcessing && !isPlaying && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.debugButton}
             onPress={() => {
               startRecording();
@@ -479,20 +479,20 @@ const VoiceAI: React.FC = () => {
             <Text style={styles.debugButtonText}>Test Recording</Text>
           </TouchableOpacity>
         )}
-        
+
         <Text style={styles.instruction}>
-          {!isConversationActive 
-            ? 'Tap "Start Conversation" to begin automatic conversation' 
-            : isRecording 
-              ? 'Recording for 5 seconds automatically...' 
-              : isProcessing 
-                ? 'Processing your voice...' 
-                : isPlaying 
-                  ? 'AI is speaking...' 
+          {!isConversationActive
+            ? 'Tap "Start Conversation" to begin automatic conversation'
+            : isRecording
+              ? 'Recording for 5 seconds automatically...'
+              : isProcessing
+                ? 'Processing your voice...'
+                : isPlaying
+                  ? 'AI is speaking...'
                   : 'Waiting for next turn...'
           }
         </Text>
-        
+
         {conversationHistory.length > 0 && (
           <Text style={styles.conversationCount}>
             Messages: {conversationHistory.length}
@@ -680,5 +680,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
 export default VoiceAI;
